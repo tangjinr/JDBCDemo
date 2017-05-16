@@ -4,7 +4,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 
 import java.sql.*;
 
-public class DBPoolDBCP extends Thread{
+public class DBPoolDBCP extends Thread {
 
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/test";
@@ -62,7 +62,7 @@ public class DBPoolDBCP extends Thread{
     }
 
     // 通过jdbc访问数据库
-     void jdbcTest(){
+    void jdbcTest() {
         Connection conn = null;
         // Statement stmt = null;
         // 使用游标，Statement变为PrepareStatement
@@ -106,7 +106,7 @@ public class DBPoolDBCP extends Thread{
         }
     }
 
-    public void run(){
+    public void run() {
         long start = System.currentTimeMillis();
         while (System.currentTimeMillis() - start < 10000) {
             // jdbcTest();

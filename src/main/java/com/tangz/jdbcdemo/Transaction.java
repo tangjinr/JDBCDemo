@@ -31,8 +31,10 @@ public class Transaction {
         try {
 
             conn = ds.getConnection();
+            conn.setAutoCommit(false); // 开启事务模式
             ptmt = conn.prepareStatement("UPDATE USER SET account = ? WHERE userName = ?");
 
+            /*下面两个操作作为一个事务整体执行，不存在中间过程*/
             // 设置张三账户为0元
             ptmt.setInt(1, 0);
             ptmt.setString(2, "ZhangSan");
@@ -42,7 +44,16 @@ public class Transaction {
             ptmt.setString(2, "LiSi");
             ptmt.execute();
 
+            conn.commit(); // 事务提交
+
         } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // 若出现异常，进行事务回滚操作
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
             e.printStackTrace();
         } finally {
             try {

@@ -5,6 +5,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 
 public class Transaction {
 
@@ -27,11 +28,13 @@ public class Transaction {
 
         Connection conn = null;
         PreparedStatement ptmt = null; // 使用游标
+        Savepoint sp = null;
 
         try {
 
             conn = ds.getConnection();
             conn.setAutoCommit(false); // 开启事务模式
+
             ptmt = conn.prepareStatement("UPDATE USER SET account = ? WHERE userName = ?");
 
             /*下面两个操作作为一个事务整体执行，不存在中间过程*/
@@ -39,17 +42,24 @@ public class Transaction {
             ptmt.setInt(1, 0);
             ptmt.setString(2, "ZhangSan");
             ptmt.execute();
+            sp = conn.setSavepoint(); // 设置检查点，保存断点
             // 设置李四账户为100元
             ptmt.setInt(1, 100);
             ptmt.setString(2, "LiSi");
             ptmt.execute();
 
-            conn.commit(); // 事务提交
+            // conn.commit(); // 事务提交
+            throw new SQLException(); // 为了展示检查点效果，人工抛出一个异常
 
         } catch (SQLException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // 若出现异常，进行事务回滚操作
+                    // conn.rollback(); // 若出现异常，进行事务回滚操作
+                    conn.rollback(sp); // 这里将事务回滚到保存的断点的位置：ptmt.setInt(1, 0);ptmt.setString(2, "ZhangSan");ptmt.execute();
+                    ptmt.setInt(1, 100);
+                    ptmt.setString(2, "ZhaoWu");
+                    ptmt.execute();
+                    conn.commit();
                 } catch (SQLException e1) {
                     e1.printStackTrace();
                 }
